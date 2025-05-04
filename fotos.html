@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Slider + Mapa</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('fondo.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: row;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 20px;
+      gap: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .slider-container, .map-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slider-container {
+      width: 50%;
+    }
+
+    .slider {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .slides {
+      display: flex;
+      height: 100%;
+      transition: transform 0.4s ease-in-out;
+    }
+
+    .slide {
+      width: 100%;
+      height: 100%;
+      flex-shrink: 0;
+      perspective: 1000px;
+    }
+
+    .flip-card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .slide:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .flip-card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .flip-card-back {
+      background-color: #f1cfec;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: rotateY(180deg);
+      font-size: 1rem;
+      color: #000000;
+      padding: 10px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .nav-button {
+      background-color: #000;
+      color: white;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin: 10px;
+    }
+
+    .indicators {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #ccc;
+    }
+
+    .indicator.active {
+      background-color: #000;
+    }
+
+    .map-container {
+      width: 50%;
+      text-align: center;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
+      border-radius: 12px;
+    }
+
+    .map-description {
+      margin-top: 15px;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .slider-container, .map-container {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <!-- Slider -->
+    <div class="slider-container">
+      <div class="slider">
+        <div class="slides" id="slideContainer">
+          <!-- Slide 1 -->
+          <div class="slide">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <img src="imagen1.jpeg" alt="Imagen 1" />
+              </div>
+              <div class="flip-card-back">
+                Aunque no estés en Caracas ni yo en Valencia, este es mi intento de estar cerca y estar presente, sabes lo mucho que te amo y te extraño, pero a su vez sabes que esto no es todo lo que hay y que un día celebraremos nuestros cumpleaños juntas como siempre hemos querido. 
+              </div>
+            </div>
+          </div>
+          <!-- Slide 2 -->
+          <div class="slide">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <img src="imagen4.jpeg" alt="Imagen 2" />
+              </div>
+              <div class="flip-card-back">
+                Gracias por dejarme estar en tu vida desde ese mensaje random de facebook hasta hoy, van 5 años ya y no cambiaría ni una cosa. 
+              </div>
+            </div>
+          </div>
+          <!-- Slide 3 -->
+          <div class="slide">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <img src="imagen2.jpeg" alt="Imagen 3" />
+              </div>
+              <div class="flip-card-back">
+                Te amo por siempre, lots of hugs and kisses (ojalá no me los retengan en migración)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="nav-button" onclick="moveSlide(-1)">&#8249;</button>
+        <button class="nav-button" onclick="moveSlide(1)">&#8250;</button>
+      </div>
+      <div class="indicators" id="indicators"></div>
+    </div>
+
+    <!-- Mapa -->
+    <div class="map-container">
+      <div id="map"></div>
+      <div class="map-description">
+        La distancia aproximada entre <strong>Caracas, Venezuela</strong> y <strong>Valencia, España</strong> es de <strong>7,100 km but always in my heart</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Slider logic
+    let currentIndex = 0;
+    const slideContainer = document.getElementById('slideContainer');
+    const slides = slideContainer.children;
+    const totalSlides = slides.length;
+    const indicators = document.getElementById('indicators');
+
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.classList.add('indicator');
+      if (i === 0) dot.classList.add('active');
+      indicators.appendChild(dot);
+    }
+
+    function updateIndicators() {
+      const dots = document.querySelectorAll('.indicator');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+      });
+    }
+
+    function moveSlide(direction) {
+      currentIndex = (currentIndex + direction + totalSlides) % totalSlides;
+      slideContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+      updateIndicators();
+    }
+
+    // Leaflet Map
+    const map = L.map('map').setView([25.0, -30.0], 3);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const caracas = [10.4806, -66.9036];
+    const valencia = [39.4699, -0.3763];
+
+    L.marker(caracas).addTo(map).bindPopup('Caracas, Venezuela');
+    L.marker(valencia).addTo(map).bindPopup('Valencia, España');
+
+    L.polyline([caracas, valencia], { color: 'blue', weight: 3 }).addTo(map);
+  </script>
+
+</body>
+</html>
